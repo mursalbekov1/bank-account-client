@@ -3,6 +3,7 @@ package com.example.bankaccountclient.controller;
 import com.example.bankaccountclient.model.Activity;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,14 +23,19 @@ public class ActivityController {
 
     @GetMapping
     @CircuitBreaker(name = "randomActivity", fallbackMethod = "fallbackRandomActivity")
-    public ResponseEntity<String> getRandomActivity() {
-        ResponseEntity<String> responseEntity = restTemplate.getForEntity("http://localhost:8080/listUser", String.class);
-        String responseBody = responseEntity.getBody();
-        log.info("Activity received: " + responseBody);
-        return ResponseEntity.ok(responseBody);
+    public String getRandomActivity() {
+        try {
+            ResponseEntity<String> response = restTemplate.getForEntity("http://localhost:8080/listUser", String.class);
+            return response.getBody(); // Возвращаем только тело ответа
+        } catch (Exception e) {
+            log.error("Failed to fetch activity: {}", e.getMessage());
+            return fallbackRandomActivity(e); // Вызываем метод отката
+        }
     }
+
     public String fallbackRandomActivity(Throwable throwable) {
-        return "Watch a video from TechPrimers";
+        return "Sorry for that";
     }
+
 
 }
