@@ -22,13 +22,8 @@ public class ActivityController {
     @GetMapping
     @CircuitBreaker(name = "randomActivity", fallbackMethod = "fallbackRandomActivity")
     public String getRandomActivity() {
-        try {
-            ResponseEntity<String> response = restTemplate.getForEntity("http://localhost:8080/listUser", String.class);
-            return response.getBody(); // Возвращаем только тело ответа
-        } catch (Exception e) {
-            log.error("Failed to fetch activity: {}", e.getMessage());
-            return fallbackRandomActivity(e); // Вызываем метод отката
-        }
+        String response = restTemplate.getForObject("http://localhost:8080/listUser", String.class);
+        return response;
     }
 
     public String fallbackRandomActivity(Throwable throwable) {
